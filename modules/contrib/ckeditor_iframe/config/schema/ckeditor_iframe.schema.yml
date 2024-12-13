@@ -1,0 +1,11 @@
+# Plugin \Drupal\ckeditor_iframe\Plugin\CKEditor5Plugin\Iframe
+ckeditor5.plugin.ckeditor_iframe_embed_iframeembed:
+  type: mapping
+  label: iFrame
+  mapping:
+    enabled_optional_attributes:
+      type: sequence
+      orderby: ~
+      label: 'Allowed optional attributes'
+      sequence:
+        type: string

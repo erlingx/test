@@ -1,0 +1,15 @@
+ckeditor_iframe_embed_iframeembed:
+  ckeditor5:
+    plugins:
+      - iframeembed.IframeEmbed
+  drupal:
+    label: Iframe embed
+    library: ckeditor_iframe/iframeembed
+    admin_library: ckeditor_iframe/admin.iframeembed
+    class: Drupal\ckeditor_iframe\Plugin\CKEditor5Plugin\Iframe
+    toolbar_items:
+      iframeEmbed:
+        label: Iframe Embed
+    elements:
+      - <iframe>
+      - <iframe align frameborder height width longdesc name scrolling src tabindex title>

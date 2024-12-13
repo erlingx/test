@@ -1,0 +1,10 @@
+name: Eksponent Theme
+type: theme
+base theme: claro
+description: 'Eksponent Theme'
+package: Core
+version: VERSION 1
+core_version_requirement: ^10
+
+libraries:
+  - eksponent_theme/eksponent

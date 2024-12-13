@@ -1,0 +1,13 @@
+name: CKEditor iFrame
+type: module
+description: "Adds the iFrame dialog plugin to CKEditor."
+package: CKEditor
+core_version_requirement: ^9 || ^10
+# Not listing CKE4 or CKE5 modules as dependencies yet,
+# allowing sites to run both at the same time to support
+# the transition.
+
+# Information added by Drupal.org packaging script on 2023-12-05
+version: '3.0.0-alpha1'
+project: 'ckeditor_iframe'
+datestamp: 1701783514

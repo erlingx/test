@@ -1,0 +1,12 @@
+name: 'Editor Paste Plain'
+type: module
+description: 'CKEditor 5 plugin to force pasting as plain text.'
+package: CKEditor
+core_version_requirement: ^10
+dependencies:
+  - drupal:ckeditor5
+
+# Information added by Drupal.org packaging script on 2024-02-06
+version: '1.0.0-beta1'
+project: 'editor_paste_plain'
+datestamp: 1707239578

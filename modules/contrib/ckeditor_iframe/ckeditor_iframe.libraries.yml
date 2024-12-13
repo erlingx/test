@@ -1,0 +1,10 @@
+iframeembed:
+  js:
+    js/build/iframeembed.js: { preprocess: false, minified: true }
+  dependencies:
+    - core/ckeditor5
+
+admin.iframeembed:
+  css:
+    theme:
+      css/iframe.admin.css: {}

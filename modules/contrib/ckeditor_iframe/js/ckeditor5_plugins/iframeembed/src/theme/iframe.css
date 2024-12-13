@@ -1,0 +1,9 @@
+.ck iframe.ck-widget {
+  pointer-events: none;
+}
+
+.ck.ck-iframe-embed-form {
+  padding: 5px;
+  row-gap: 5px;
+  display: grid;
+}

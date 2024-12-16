@@ -873,7 +873,7 @@ if ($_SERVER['HTTP_HOST'] == "localhost") {
 }
 
     $databases['default']['default'] = array(
-        'database' => 'eksponent',
+        'database' => 'eksponent_ny',
         'username' => 'root',
         'password' => '',
         'prefix' => 'drupal_',
@@ -894,3 +894,4 @@ $settings['config_sync_directory'] = 'sites/default/files/config_zzwscA5Njjq0ki1
 $settings['simple_sitemap_engines.index_now.key'] = '2e58522d-f290-4a1f-9b79-23c941d24759';
 
 $settings['state_cache']=TRUE;
+$settings['views_query_debug'] = TRUE;

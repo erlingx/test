@@ -1,0 +1,8 @@
+name: 'Combined Events'
+type: module
+description: 'Combines data from the Events content type with external JSON data and exposes it to a View.'
+core_version_requirement: ^10
+package: Custom
+dependencies:
+  - drupal:views
+  - drupal:rest

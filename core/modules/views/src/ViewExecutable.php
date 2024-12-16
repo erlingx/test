@@ -173,7 +173,7 @@ class ViewExecutable {
    * @var array
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $exposed_input = [];
+  public $exposed_input = [];
 
   /**
    * Exposed widget input directly from the $form_state->getValues().

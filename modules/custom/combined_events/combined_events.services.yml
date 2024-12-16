@@ -1,0 +1,4 @@
+services:
+  combined_events.fetcher:
+    class: Drupal\combined_events\Service\EventsFetcher
+    arguments: ['@http_client']

@@ -1,0 +1,184 @@
+<?php
+
+use Drupal\views\ViewExecutable;
+use Drupal\views\ResultRow;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_form_alter().
+ */
+function combined_events_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  // Submit button text change to Search
+  if ($form_id === 'views_exposed_form' && isset($form['#id']) && $form['#id'] == 'views-exposed-form-combined-events-page-1') {
+    if (isset($form['actions']['submit'])) {
+      $form['actions']['submit']['#value'] = t('Search');
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_views_view_field().
+ */
+function combined_events_preprocess_views_view_field(array &$variables) {
+
+  // Logic for Tickets available
+  if ($variables['view']->id() == 'event_overview' && $variables['field']->field == 'field_tickets_available') {
+    $row = $variables['row'];
+
+    if (isset($row->_entity)) {
+
+      $field_value = $row->_entity->get('field_tickets_available')->value;
+
+      if ($field_value == 0) {
+        $variables['output'] = t('<span class="soldout">Sold Out</span>');
+      }
+      if ($field_value > 0 && $field_value < 10) {
+        $variables['output'] = t('<span class="less10">' . $field_value . ' seats left</span>');
+      }
+      if ($field_value >= 10) {
+        $variables['output'] = t('<span class="over10">&nbsp;</span>');
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK() for views-view.html.twig.
+ */
+function combined_events_preprocess_views_view(array &$variables) {
+
+  // set counter for upcoming events
+  $view = $variables['view'];
+  if ($view->id() === 'combined_events') {
+    $pager = $variables['view']->pager;
+    if ($pager && is_object($pager)) {
+      $variables['events_count'] = $pager->getTotalItems();
+    }
+  }
+}
+
+
+/**
+ * Implements hook_views_post_execute().
+ */
+function combined_events_views_post_execute(ViewExecutable $view) {
+
+  if ($view->id() === 'combined_events') {
+
+    $title_filter = $view->exposed_data['event_title'] ?? '';
+
+    $local_events = [];
+    foreach ($view->result as $row) {
+      $node = $row->_entity ?? NULL; // Safely retrieve the entity from the row.
+      if ($node) {
+
+        // Apply title filter on internal events.
+        if (!empty($title_filter) && stripos($node->getTitle(), $title_filter) === FALSE) {
+          continue; // Skip nodes that don't match the title filter.
+        }
+
+        $internal_row = new ResultRow();
+
+        // Map internal data that need to change. The rest stays
+        $internal_row->event_title = $node->getTitle();
+        $internal_row->event_image = $node->hasField('field_eventimage') && !$node->get('field_eventimage')
+          ->isEmpty()
+          ? \Drupal::service('file_url_generator')
+            ->generateAbsoluteString($node->get('field_eventimage')->entity->getFileUri())
+          : NULL;
+
+        $internal_row->event_datetime_unformatted = $node->get('field_start_datetime')->value; // For sorting.
+        $internal_row->event_datetime = format_date($node->get('field_start_datetime')->value);
+        $internal_row->event_datetime_end = format_date_end($node->get('field_end_datetime')->value);
+        $internal_row->event_tickets = ticket_logic($node->get('field_tickets_available')->value);
+        $internal_row->event_description = $node->get('body')->value;
+        $internal_row->event_url = "/node/" . $node->id();
+        $local_events[] = $internal_row;
+      }
+    }
+
+    // Fetch external events using the custom service.
+    $external_events = [];
+    $external_data = \Drupal::service('combined_events.fetcher')->fetchEvents();
+    foreach ($external_data as $event) {
+      $row = new ResultRow();
+
+      // Apply title filter to external events
+      if (!empty($title_filter) && stripos($event['title'] ?? '', $title_filter) === FALSE) {
+        continue; // Skip external events that don't match the filter.
+      }
+
+      // Map external events data to the expected structure.
+      $row->event_title = $event['title'] ?? 'Unknown Title';
+      $row->event_image = $event['image'] ?? NULL;
+      $row->event_datetime_unformatted = $event['start_date']; // For sorting.
+      $row->event_datetime = format_date($event['start_date']);
+      $row->event_datetime_end = format_date_end($event['start_date']);
+
+      $row->event_tickets = ticket_logic($event['available_tickets']);
+      $row->event_description = $event['description'];
+      $row->event_url = "#"; // the api has not url values
+      $row->event_organizer = $event['organizer']['name'] ?? "";
+      $external_events[] = $row;
+    }
+
+    $combined_results = array_merge($local_events, $external_events);
+
+    // sort date asc
+    usort($combined_results, function($a, $b) {
+      $date_a = $a->event_datetime_unformatted ?? '';
+      $date_b = $b->event_datetime_unformatted ?? '';
+
+      // Handle missing dates by pushing them to the end.
+      if (empty($date_a)) {
+        return 1;
+      }
+      if (empty($date_b)) {
+        return -1;
+      }
+
+      // Sort lexicographically (ISO 8601 compatible).
+      return strcmp($date_a, $date_b);
+    });
+
+    $view->result = $combined_results;
+
+    /* Pager
+     * The pager in Views UI is broken because external events are not proper nodes with label etc.
+     * So manually create the pager
+     * Set items_per_page explicitly to 5 programmatically.
+    */
+    $items_per_page = 5;
+    $current_page = $view->pager->getCurrentPage();
+
+    $view->pager->setItemsPerPage($items_per_page);
+    $view->pager->total_items = count($combined_results);
+
+    $offset = $current_page * $items_per_page;
+    $view->result = array_slice($combined_results, $offset, $items_per_page);
+
+    $view->pager->updatePageInfo();
+  }
+}
+
+function format_date($date) {
+  return date('l d.m.Y H:i', strtotime($date));
+}
+
+function format_date_end($date) {
+  return date('H:i', strtotime($date));
+}
+
+function ticket_logic($available_tickets) {
+  $label = "";
+  if ($available_tickets == 0) {
+    $label = '<span class="soldout">Sold Out</span>';
+  }
+  if ($available_tickets > 0 && $available_tickets < 10) {
+    $label = '<span class="less10">' . $available_tickets . ' seats left</span>';
+  }
+  if ($available_tickets >= 10) {
+    $label = '<span class="over10">&nbsp;</span>';
+  }
+  return $label;
+}

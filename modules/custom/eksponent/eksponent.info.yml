@@ -1,7 +1,0 @@
-name: 'Eksponent'
-type: module
-description: 'Event logic'
-core_version_requirement: ^10
-version: '1'
-package: 'Custom'
-dependencies: []

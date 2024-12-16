@@ -39,6 +39,7 @@
     dom_id ? 'js-view-dom-id-' ~ dom_id,
   ]
 %}
+
 <div{{ attributes.addClass(classes) }}>
   {{ title_prefix }}
   {% if title %}
@@ -51,6 +52,8 @@
   {% if exposed %}
     <div class="view-filters">
       {{ exposed }}
+    </div>
+    <div class="event_count">We have {{ events_count }} upcoming events
     </div>
   {% endif %}
 
@@ -80,6 +83,7 @@
   {% if pager %}
     {{ pager }}
   {% endif %}
+
   {% if attachment_after %}
     <div class="attachment attachment-after">
       {{ attachment_after }}

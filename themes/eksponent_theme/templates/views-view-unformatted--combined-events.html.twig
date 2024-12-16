@@ -1,0 +1,36 @@
+{#  Builds the view  #}
+
+  {% for row in rows %}
+    <div class="views-row">
+      <div class="image">
+        <img src="{{ row.content['#row'].event_image }}" alt="{{ row.content['#row']._entity.label() }}"/>
+      </div>
+      <div class="wrap">
+        <p class="title">{{ row.content['#row'].event_title }}</p>
+        {% if row.content['#row'].event_organizer|raw !="" %}
+          <p class="organizer">
+            Organizer: {{ row.content['#row'].event_organizer }}</p>
+        {% endif %}
+        <div class="date_tickets">
+          <div class="datetime">
+            {{ row.content['#row'].event_datetime }}h.
+            - {{ row.content['#row'].event_datetime_end }}h.
+          </div>
+          <div class="tickets">
+            {{ row.content['#row'].event_tickets | raw }}
+          </div>
+        </div>
+        <div class="content">
+          <p class="description">
+            {{ row.content['#row'].event_description | raw }}
+          </p>
+          <p class="read_more">
+            <a href="{{ row.content['#row'].event_url }}" alt="">Read more ></a>
+          </p>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p>No current events.</p>
+  {% endfor %}
+

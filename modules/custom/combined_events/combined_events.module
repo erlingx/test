@@ -16,31 +16,6 @@ function combined_events_form_alter(&$form, \Drupal\Core\Form\FormStateInterface
   }
 }
 
-/**
- * Implements hook_preprocess_views_view_field().
- */
-function combined_events_preprocess_views_view_field(array &$variables) {
-
-  // Logic for Tickets available
-  if ($variables['view']->id() == 'event_overview' && $variables['field']->field == 'field_tickets_available') {
-    $row = $variables['row'];
-
-    if (isset($row->_entity)) {
-
-      $field_value = $row->_entity->get('field_tickets_available')->value;
-
-      if ($field_value == 0) {
-        $variables['output'] = t('<span class="soldout">Sold Out</span>');
-      }
-      if ($field_value > 0 && $field_value < 10) {
-        $variables['output'] = t('<span class="less10">' . $field_value . ' seats left</span>');
-      }
-      if ($field_value >= 10) {
-        $variables['output'] = t('<span class="over10">&nbsp;</span>');
-      }
-    }
-  }
-}
 
 /**
  * Implements hook_preprocess_HOOK() for views-view.html.twig.

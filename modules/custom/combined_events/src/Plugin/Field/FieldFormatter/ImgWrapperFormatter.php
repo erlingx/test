@@ -34,7 +34,7 @@ class ImgWrapperFormatter extends FormatterBase {
           $image_render_array = [
             '#theme' => 'image',
             '#uri' => $uri,
-            '#attributes' => ['class' => ['custom-image-wrapper']],
+            '#attributes' => ['class' => ['img_eksponent']],
             '#alt' => $item->alt,
             '#title' => $item->title,
           ];
@@ -42,7 +42,7 @@ class ImgWrapperFormatter extends FormatterBase {
           $elements[$delta] = [
             '#type' => 'html_tag',
             '#tag' => 'span',
-            '#attributes' => ['class' => ['img_eksponent']],
+            '#attributes' => ['class' => ['custom-image-wrapper']],
             'content' => $image_render_array,
           ];
         }

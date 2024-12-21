@@ -3,6 +3,7 @@
 use Drupal\views\ViewExecutable;
 use Drupal\views\ResultRow;
 use Drupal\Core\Url;
+use Drupal\node\Entity\Node;
 
 /**
  * Implements hook_form_alter().
@@ -16,12 +17,10 @@ function combined_events_form_alter(&$form, \Drupal\Core\Form\FormStateInterface
   }
 }
 
-
 /**
  * Implements hook_preprocess_HOOK() for views-view.html.twig.
  */
 function combined_events_preprocess_views_view(array &$variables) {
-
   // set counter for upcoming events
   $view = $variables['view'];
   if ($view->id() === 'combined_events') {
@@ -32,29 +31,34 @@ function combined_events_preprocess_views_view(array &$variables) {
   }
 }
 
-
 /**
  * Implements hook_views_post_execute().
  */
 function combined_events_views_post_execute(ViewExecutable $view) {
-
   if ($view->id() === 'combined_events') {
-
+    // Title filter from exposed data.
     $title_filter = $view->exposed_data['event_title'] ?? '';
 
-    $local_events = [];
-    foreach ($view->result as $row) {
-      $node = $row->_entity ?? NULL; // Safely retrieve the entity from the row.
-      if ($node) {
+    // Get today's date in UTC to filter events starting today or later.
+    $current_date = (new \DateTime('now', new \DateTimeZone('UTC')))->format('Y-m-d');
 
-        // Apply title filter on internal events.
-        if (!empty($title_filter) && stripos($node->getTitle(), $title_filter) === FALSE) {
-          continue; // Skip nodes that don't match the title filter.
+    $local_events = [];
+
+    foreach ($view->result as $row) {
+      $node = $row->_entity ?? NULL;
+
+      if ($node) {
+        // Get the start datetime of the node.
+        $start_date = $node->get('field_start_datetime')->value;
+
+        // Apply both filters: title and date.
+        if ((!empty($title_filter) && stripos($node->getTitle(), $title_filter) === FALSE) || $start_date < $current_date) {
+          continue;
         }
 
         $internal_row = new ResultRow();
 
-        // Map internal data that need to change. The rest stays
+        // Map internal data that need to change. The rest stays.
         $internal_row->event_title = $node->getTitle();
         $internal_row->event_image = $node->hasField('field_eventimage') && !$node->get('field_eventimage')
           ->isEmpty()
@@ -78,12 +82,15 @@ function combined_events_views_post_execute(ViewExecutable $view) {
     foreach ($external_data as $event) {
       $row = new ResultRow();
 
-      // Apply title filter to external events
-      if (!empty($title_filter) && stripos($event['title'] ?? '', $title_filter) === FALSE) {
-        continue; // Skip external events that don't match the filter.
+      // Get the start date of the external event.
+      $start_date = $event['start_date'] ?? '';
+
+      // Apply both filters: title and date.
+      if ((!empty($title_filter) && stripos($event['title'] ?? '', $title_filter) === FALSE) || $start_date < $current_date) {
+        continue;
       }
 
-      // Map external events data to the expected structure.
+      // Map external event data to the expected structure.
       $row->event_title = $event['title'] ?? 'Unknown Title';
       $row->event_image = $event['image'] ?? NULL;
       $row->event_datetime_unformatted = $event['start_date']; // For sorting.
@@ -92,14 +99,14 @@ function combined_events_views_post_execute(ViewExecutable $view) {
 
       $row->event_tickets = ticket_logic($event['available_tickets']);
       $row->event_description = $event['description'];
-      $row->event_url = "#"; // the api has not url values
+      $row->event_url = "#"; // The API has no URL values.
       $row->event_organizer = $event['organizer']['name'] ?? "";
       $external_events[] = $row;
     }
 
     $combined_results = array_merge($local_events, $external_events);
 
-    // sort date asc
+    // Sort by date in ascending order.
     usort($combined_results, function($a, $b) {
       $date_a = $a->event_datetime_unformatted ?? '';
       $date_b = $b->event_datetime_unformatted ?? '';

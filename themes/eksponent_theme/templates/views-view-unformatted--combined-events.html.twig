@@ -3,7 +3,7 @@
   {% for row in rows %}
     <div class="views-row">
       <div class="image">
-        <img src="{{ row.content['#row'].event_image }}" alt="{{ row.content['#row']._entity.label() }}"/>
+        <img src="{{ row.content['#row'].event_image }}" alt="{{ row.content['#row'].event_title }}"/>
       </div>
       <div class="wrap">
         <p class="title">{{ row.content['#row'].event_title }}</p>

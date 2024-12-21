@@ -40,7 +40,8 @@ class EventsFetcher {
         ],
       ]);
       $data = json_decode($response->getBody(), TRUE);
-      \Drupal::logger('eksponent_events')->info('External events fetched.');
+      // \Drupal::logger('eksponent_events')->info('External events fetched.');
+
       return $data;
     }
     catch (\Exception $e) {

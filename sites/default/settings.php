@@ -288,7 +288,7 @@ $settings['hash_salt'] = 'Elt6lXEMYuabgXM4cvyoyj2bf4hs5TH53GJyoixDWGifhVxUoqmBfE
  * After finishing the upgrade, be sure to open this file again and change the
  * TRUE back to a FALSE!
  */
-$settings['update_free_access'] = false;
+$settings['update_free_access'] = true;
 
 /**
  * Fallback to HTTP for Update Manager and for fetching security advisories.
@@ -755,7 +755,9 @@ $settings['container_yamls'][] = $app_root . '/' . $site_path . '/services.yml';
 # $settings['trusted_host_patterns'] = [];
 
 $settings['trusted_host_patterns'] = array(
-    '^localhost$'
+    '^localhost$',
+  '^test\.audiovisualcreation\.dk$',
+  '^www\.test\.audiovisualcreation\.dk$'
 );
 
 /**
@@ -866,27 +868,43 @@ $settings['migrate_node_migrate_type_classic'] = FALSE;
 #   include $app_root . '/' . $site_path . '/settings.local.php';
 # }
 
-if ($_SERVER['HTTP_HOST'] == "localhost") {
-  if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
-   include $app_root . '/' . $site_path . '/settings.local.php';
-  }
+if (file_exists(__DIR__ . '/settings.local.php')) {
+  include __DIR__ . '/settings.local.php';
 }
 
-    $databases['default']['default'] = array(
-        'database' => 'eksponent_ny',
-        'username' => 'root',
-        'password' => '',
-        'prefix' => 'drupal_',
-        'host' => 'localhost',
-        'port' => '3306',
-        'namespace' => 'Drupal\\mysql\\Driver\\Database\\mysql',
-        'driver' => 'mysql',
-        'autoload' => 'core/modules/mysql/src/Driver/Database/mysql/',
-      'init_commands' => [
-        'isolation_level' => 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED',
-      ],
-    );
 
+if ($_SERVER['HTTP_HOST'] != "localhost") {
+  $databases['default']['default'] = [
+    'database' => 'audiovisualcreation_dktest',
+    'username' => 'audiovisualcreation_dktest',
+    'password' => 'HgdtfDsa443#',
+    'prefix' => 'drupal_',
+    'host' => 'localhost',
+    'port' => '3306',
+    'namespace' => 'Drupal\\mysql\\Driver\\Database\\mysql',
+    'driver' => 'mysql',
+    'autoload' => 'core/modules/mysql/src/Driver/Database/mysql/',
+    'init_commands' => [
+      'isolation_level' => 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED',
+    ],
+  ];
+}
+else {
+  $databases['default']['default'] = [
+    'database' => 'eksponent_ny',
+    'username' => 'root',
+    'password' => '',
+    'prefix' => 'drupal_',
+    'host' => 'localhost',
+    'port' => '3306',
+    'namespace' => 'Drupal\\mysql\\Driver\\Database\\mysql',
+    'driver' => 'mysql',
+    'autoload' => 'core/modules/mysql/src/Driver/Database/mysql/',
+    'init_commands' => [
+      'isolation_level' => 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED',
+    ],
+  ];
+}
 
 $settings['config_sync_directory'] = 'sites/default/files/config_zzwscA5Njjq0ki1Xtaz6QyHJnAl8FWIBaUapZSisC3xOS1cv25XcYnX4svHhovfRbuRUjmvKFQ/sync';
 
@@ -895,3 +913,21 @@ $settings['simple_sitemap_engines.index_now.key'] = '2e58522d-f290-4a1f-9b79-23c
 
 $settings['state_cache']=TRUE;
 $settings['views_query_debug'] = TRUE;
+
+
+if (isset($GLOBALS['request']) and
+  '/test/index.php' === $GLOBALS['request']->server->get('SCRIPT_NAME')) {
+  $GLOBALS['request']->server->set('SCRIPT_NAME', '/index.php');
+}
+
+
+// Automatically generated include for settings managed by ddev.
+$ddev_settings = __DIR__ . '/settings.ddev.php';
+if (getenv('IS_DDEV_PROJECT') == 'true' && is_readable($ddev_settings)) {
+  require $ddev_settings;
+}
+
+// Override database name for development, if needed.
+if (isset($databases['default']['default'])) {
+  $databases['default']['default']['database'] = 'eksponent_ny';
+}
